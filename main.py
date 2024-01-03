@@ -53,23 +53,33 @@ def compress_images(folder_selected, target_resolution=1920, target_quality=4):
             print(f"Failed to compress {file.name}: {e}")
 
 
-try:
-    print("Select the folder with the photos you want to compress:")
-    root = Tk()
-    root.withdraw()
-    root.attributes('-topmost', True)
-    folder_selected = filedialog.askdirectory()
+def compress_folder():
+    try:
+        print("Select the folder with the photos you want to compress:")
+        root = Tk()
+        root.withdraw()
+        root.attributes('-topmost', True)
+        folder_selected = filedialog.askdirectory()
 
-    if not folder_selected:
-        print("No folder selected! Exiting.")
-        exit()
+        if not folder_selected:
+            print("No folder selected! Exiting.")
+            exit()
 
-    folder_selected_path = Path(folder_selected)
+        folder_selected_path = Path(folder_selected)
 
-    compress_images(folder_selected_path)
-    os.startfile(str(folder_selected_path / "Compressed"))
-    print("Compression complete.")
+        compress_images(folder_selected_path)
+        os.startfile(str(folder_selected_path / "Compressed"))
+        print("Compression complete.")
 
-except Exception as e:
-    print(f"Error: {e}")
-    input("Press Enter to exit...")
+    except Exception as e:
+        print(f"Error: {e}")
+        input("Press Enter to exit...")
+
+
+if __name__ == "__main__":
+
+    keep_running = True
+
+    while keep_running:
+        compress_folder()
+        keep_running = input("Press Enter to compress another folder, or type 'q' to quit...") != "q"
