@@ -1,4 +1,4 @@
-# Image Compression Tool
+# Batch Image Compression Tool
 
 This is a simple image compression tool to allow batch image compression quickly and easily.
 
@@ -8,3 +8,4 @@ Run the `main.py` script. The script will prompt you to select a folder to compr
 
 The compressed images are saved in a 'Compressed' subfolder in the selected folder.
 
+Run `pyinstaller main.spec` to create an executable file.
