@@ -21,7 +21,7 @@ exe = EXE(
     a.binaries,
     a.datas,
     [],
-    name='ImageCompressor',
+    name='Batch-Image-Compressor',
     debug=False,
     bootloader_ignore_signals=False,
     strip=False,
