@@ -18,39 +18,34 @@ def get_ffmpeg_path():
     return ffmpeg_path
 
 
-def compress_images(folder_selected, target_resolution=1920, target_quality=4):
+def compress_images(file, target_resolution=1920, target_quality=4):
     """
     Compresses image files in a specified folder, excluding any in a 'Compressed' subfolder.
 
     Args:
-        folder_selected (Path): Path object to the folder containing the images to be compressed.
+        file (Path): The file to compress.
         target_resolution (int): The target resolution for the compressed images. Defaults to 1920.
         target_quality (int): The target quality for the compressed images (1-31, 1 is the best). Defaults to 4.
     """
     ffmpeg_path = get_ffmpeg_path()
 
-    path_compressed = folder_selected / "Compressed"
-    if not path_compressed.exists():
-        path_compressed.mkdir()
+    original_file_path = str(file)
+    target_file_path = str(file.parent / "Compressed" / file.name)
 
-    for file in folder_selected.iterdir():
-        if file.is_dir() or file.suffix.lower() not in [".jpg", ".jpeg", ".png"]:
-            continue
+    # Create the folder for the compressed images if it doesn't exist
+    Path(file.parent / "Compressed").mkdir(parents=True, exist_ok=True)
 
-        original_file_path = str(file)
-        target_file_path = str(path_compressed / file.name)
+    command = [
+        str(ffmpeg_path), "-y", "-i", original_file_path,
+        "-vcodec", "mjpeg", "-vf", f"scale={target_resolution}:-1",
+        "-q:v", str(target_quality), target_file_path
+    ]
 
-        command = [
-            str(ffmpeg_path), "-y", "-i", original_file_path,
-            "-vcodec", "mjpeg", "-vf", f"scale={target_resolution}:-1",
-            "-q:v", str(target_quality), target_file_path
-        ]
-
-        try:
-            subprocess.run(command, check=True)
-            print(f"Compressed {file.name}")
-        except subprocess.CalledProcessError as e:
-            print(f"Failed to compress {file.name}: {e}")
+    try:
+        subprocess.run(command, check=True)
+        print(f"Compressed {file.name}")
+    except subprocess.CalledProcessError as e:
+        print(f"Failed to compress {file.name}: {e}")
 
 
 def compress_folder():
@@ -67,17 +62,23 @@ def compress_folder():
 
         folder_selected_path = Path(folder_selected)
 
-        compress_images(folder_selected_path)
-        os.startfile(str(folder_selected_path / "Compressed"))
-        print("Compression complete.")
+        compress_images_recursive(folder_selected_path)
+        # os.startfile(str(folder_selected_path / "Compressed"))
 
     except Exception as e:
         print(f"Error: {e}")
         input("Press Enter to exit...")
 
 
-if __name__ == "__main__":
+def compress_images_recursive(folder):
+    for item in folder.iterdir():
+        if item.is_dir() and item.name != "Compressed":
+            compress_images_recursive(item)
+        elif item.is_file() and item.suffix.lower() in [".jpg", ".jpeg", ".png"]:
+            compress_images(item)
 
+
+if __name__ == "__main__":
     keep_running = True
 
     while keep_running:
