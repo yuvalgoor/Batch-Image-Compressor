@@ -37,7 +37,7 @@ def compress_images(file, target_resolution=1920, target_quality=4):
 
     command = [
         str(ffmpeg_path), "-y", "-i", original_file_path,
-        "-vcodec", "mjpeg", "-vf", f"scale={target_resolution}:-1",
+        "-vcodec", "libjpeg", "-vf", f"scale={target_resolution}:-1",
         "-q:v", str(target_quality), target_file_path
     ]
 
