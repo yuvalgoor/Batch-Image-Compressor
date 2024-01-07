@@ -1,52 +1,35 @@
-import os
-import shlex
-import subprocess
 from tkinter import filedialog, Tk
 from pathlib import Path
-import sys
+
+from PIL import Image
 
 
-def get_ffmpeg_path():
-    # Check if we are running as a PyInstaller bundle
-    if getattr(sys, 'frozen', False):
-        # If bundled, the executable path is in _MEIPASS
-        bundle_dir = Path(sys._MEIPASS)
-    else:
-        # If running normally, use the script's directory
-        bundle_dir = Path(__file__).parent
-
-    ffmpeg_path = bundle_dir / "ffmpeg.exe"
-    return ffmpeg_path
-
-
-def compress_images(file, target_resolution=1920, target_quality=4):
+def compress_images(file, target_resolution=1920, target_quality=60):
     """
-    Compresses image files in a specified folder, excluding any in a 'Compressed' subfolder.
+    Compresses an image file to a specified resolution and quality.
 
     Args:
         file (Path): The file to compress.
-        target_resolution (int): The target resolution for the compressed images. Defaults to 1920.
-        target_quality (int): The target quality for the compressed images (1-31, 1 is the best). Defaults to 4.
+        target_resolution (int): The target width resolution for the compressed images. Defaults to 1920.
+        target_quality (int): The target quality for the compressed images (0-100, 100 is the best). Defaults to 85.
     """
-    ffmpeg_path = get_ffmpeg_path()
+    original_image = Image.open(file)
 
-    original_file_path = str(file)
-    target_file_path = str(file.parent / "Compressed" / file.name)
+    # Calculate the target height to maintain aspect ratio
+    aspect_ratio = original_image.height / original_image.width
+    target_height = int(target_resolution * aspect_ratio)
+
+    # Resize the image
+    resized_image = original_image.resize((target_resolution, target_height))
 
     # Create the folder for the compressed images if it doesn't exist
-    Path(file.parent / "Compressed").mkdir(parents=True, exist_ok=True)
+    target_folder = file.parent / "Compressed"
+    target_folder.mkdir(parents=True, exist_ok=True)
 
-    command = [
-        shlex.quote(str(ffmpeg_path)), "-y", "-i", shlex.quote(original_file_path),
-        "-vcodec", "mjpeg", "-vf", f"scale={target_resolution}:-1",
-        "-q:v", str(target_quality), shlex.quote(target_file_path)
-    ]
-
-    try:
-        subprocess.run(command, check=True)
-        print(f"Compressed {file.name}")
-    except subprocess.CalledProcessError as e:
-        print(f"Failed to compress {file.name}: {e}")
+    # Save the image in JPEG format
+    target_file_path = target_folder / file.with_suffix('.jpg').name
+    resized_image.save(target_file_path, format='JPEG', quality=target_quality, optimize=True)
+    print(f"Compressed {file.name}")
 
 
 def compress_folder():
