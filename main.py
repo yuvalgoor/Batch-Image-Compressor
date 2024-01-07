@@ -1,4 +1,5 @@
 import os
+import shlex
 import subprocess
 from tkinter import filedialog, Tk
 from pathlib import Path
@@ -36,9 +37,9 @@ def compress_images(file, target_resolution=1920, target_quality=4):
     Path(file.parent / "Compressed").mkdir(parents=True, exist_ok=True)
 
     command = [
-        str(ffmpeg_path), "-y", "-i", original_file_path,
-        "-vcodec", "libjpeg", "-vf", f"scale={target_resolution}:-1",
-        "-q:v", str(target_quality), target_file_path
+        shlex.quote(str(ffmpeg_path)), "-y", "-i", shlex.quote(original_file_path),
+        "-vcodec", "mjpeg", "-vf", f"scale={target_resolution}:-1",
+        "-q:v", str(target_quality), shlex.quote(target_file_path)
     ]
 
     try:
